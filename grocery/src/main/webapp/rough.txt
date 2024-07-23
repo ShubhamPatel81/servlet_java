@@ -1,0 +1,321 @@
+<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.0.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<!--
+		https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api -->
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		
+		// Login Page POP-UP
+		<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="successModalLabel">Login Successful</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        You have logged in successfully.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Bootstrap JavaScript if not already included -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#loginForm').on('submit', function(event) {
+            event.preventDefault();
+            
+            // Simulate a successful login. In real scenario, you would verify login credentials using AJAX or server-side validation.
+            var isSuccess = true;  // This should be set based on the actual login success.
+
+            if (isSuccess) {
+                $('#successModal').modal('show');
+            }
+        });
+    });
+</script>
+
+
+package com.UserServlet;
+
+import java.io.IOException;
+import com.DataAccess.UserDAOImpl;
+import com.DataBase.DatabaseConnect;
+import com.entity.User;
+
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+@WebServlet("/login")
+public class LoginServlet extends HttpServlet {
+//    private static final String DatabaseConnect = ;
+
+	@Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        // Handle GET requests if needed
+        resp.getWriter().write("GET method is not supported for login. Please use POST.");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            String email = req.getParameter("email1");
+            String password = req.getParameter("password1");
+             
+            UserDAOImpl dao = new UserDAOImpl(DatabaseConnect.getConn());
+              
+            HttpSession session = req.getSession();
+            
+            // Perform your login logic here
+            if ("admin@gmail.com".equals(email) && "admin".equals(password)) {
+            	User us = new User();
+            	
+            	session.setAttribute("userobj", us);
+                resp.sendRedirect("admin/adminhome.jsp");
+            } else {
+            	User us = dao.login(email, password);
+            	if(us!=null) {
+            		session.setAttribute("userobj", us);
+            		resp.sendRedirect("home.jsp");
+            	}else {
+            		session.setAttribute("failed_msg", "Email amd Password Invalid ");
+            		resp.sendRedirect("login.jsp");
+            	}
+            	
+                resp.sendRedirect("home.jsp");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.getWriter().write("An error occurred during login.");
+        }
+    }
+}
+\\\\\\\\
+package com.Admin.Servlet;
+
+import java.io.IOException;
+import com.DataAccess.itemDAOImpl;
+import com.DataBase.DatabaseConnect;
+import com.entity.itemDetails;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Part;
+
+@WebServlet("/add_items")
+@MultipartConfig
+public class itemAdd extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession();
+        try {
+        	
+
+            String itemName = req.getParameter("itemname");
+            
+            String auth = req.getParameter("auth");
+            String price = req.getParameter("price");
+            String itemCategory = req.getParameter("itemtype");
+            String status = req.getParameter("itemstatus");
+            Part part = req.getPart("itemimage");
+            String fileName = part.getSubmittedFileName();
+
+           itemDetails i = new itemDetails(itemName, auth,price,itemCategory,fileName, status,"admin" );
+//           System.out.println(i);
+           
+           itemDAOImpl dao = new itemDAOImpl(DatabaseConnect.getConn());
+          boolean f =  dao.addItem(i);
+         if(f) {
+        	 session.setAttribute("success_msg", "Book Added Successfully!!");
+        	 resp.sendRedirect("admin/add_items.jsp");
+        	 
+        	 
+         }else {
+        	 session.setAttribute("failed_msg", "somethin erro on adding book!!");
+        	 resp.sendRedirect("admin/add_items.jsp");
+        	 
+        	 
+         }
+          
+
+        	
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute("failed_msg", "Exception occurred: " + e.getMessage());
+        }
+        resp.sendRedirect("admin/add_items.jsp");
+    }
+}
+
+
+int i = dao2.getOrderNo();
+public int getOrderNo();
+@Override
+	public int getOrderNo() {
+		int i = 1;
+		try {
+			String q = "select * from orders";
+			PreparedStatement psmt = conn.prepareStatement(q);
+
+			ResultSet rs = psmt.executeQuery();
+
+			while (rs.next()) {
+
+				i++;
+
+			}
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+
+		return i;
+	}
+ i++;
+
+ 
+ <----------------------------Navbar Of admin Page -----------------
+ 
+<%@ page isELIgnored="false"%>
+<div class="container-fluid"
+	style="height: .7rem; background-color: #34eb80"></div>
+
+<div class="container-fluid p-3">
+	<div class="row">
+		<div class="col-md-3 text-success">
+
+			<h3>
+				<a href="../index.jsp"
+					style="text-decoration: none; color: #34eb80;"><i
+					class="fa-solid fa-cart-shopping"></i>SwapMart</a>
+
+			</h3>
+		</div>
+
+		<div class="col-md-3 ">
+			<c:if test="${not empty userobj}">
+				<!-- Display user name and logout button -->
+				<a class="btn btn-success"><i class="fas fa-user p-1"></i>${userobj.name}</a>
+				<a data-toggle="modal" data-target="#exampleModal"
+					class="btn btn-primary text-white"><i
+					class="fas fa-sign-in-alt p-1"></i>Logout</a>
+			</c:if>
+			<c:if test="${empty userobj}">
+				<!-- Display login and register buttons -->
+				<a href="../login.jsp" class="btn btn-success"><i
+					class="fas fa-sign-in-alt"></i>Login</a>
+				<a href="../register.jsp" class="btn btn-primary text-white"><i
+					class="fa-solid fa-user-plus p-1"></i>Register</a>
+			</c:if>
+
+
+
+		</div>
+	</div>
+
+	<!-- Logout modal -->
+	<!-- Button trigger modal -->
+
+
+	<!-- Modal -->
+	<div class="modal fade" id="exampleModal" tabindex="-1"
+		aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel"></h5>
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<h3>Do you want to logout</h3>
+					<div class="text-center">
+						<button type="button" class="btn btn-secondary"
+							data-dismiss="modal">Close</button>
+						<a href="../logout" type="button" class="btn btn-primary">logout</a>
+					</div>
+				</div>
+				<div class="modal-footer"></div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<!--   end-->
+
+	<!-- For Fixing the navbar */  -->
+	<style>
+.navbar {
+	position: -webkit-sticky; /* For Safari */
+	position: sticky;
+	top: 0;
+	color: white;
+	padding: 10px 20px;
+	z-index: 1000;
+}
+</style>
+
+	<nav class="navbar navbar-expand-lg navbar-dark bg-custom">
+		<button class="navbar-toggler" type="button" data-toggle="collapse"
+			data-target="#navbarSupportedContent"
+			aria-controls="navbarSupportedContent" aria-expanded="false"
+			aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item active"><a class="nav-link"
+					href="adminhome.jsp">Home <span class="sr-only">(current)</span>
+				</a></li>
+
+			</ul>
+
+
+		</div>
+	</nav>
+
+
+
+	/////////////admin home page //////////
+
+<%
+HttpSession session = request.getSession(false);
+if (session == null || session.getAttribute("isAdmin") == null) {
+	response.sendRedirect("login.jsp");
+	return;
+}
+String userEmail = (String) session.getAttribute("userEmail");
+%>
